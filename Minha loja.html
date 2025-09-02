@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LojaX — sua loja online</title>
+  <meta name="description" content="Site de vendas simples com login, carrinho e busca, feito em HTML, CSS e JavaScript puro." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0b0c10;
+      --card: #111318;
+      --muted: #1a1d24;
+      --text: #e8edf2;
+      --sub: #b6c2cf;
+      --brand: #4f8cff;
+      --brand-2: #7c5cff;
+      --ok: #22c55e;
+      --danger: #ef4444;
+      --ring: #23324a;
+      --radius: 16px;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing: border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(79,140,255,.12), transparent 40%),
+                  radial-gradient(800px 400px at 100% 0%, rgba(124,92,255,.10), transparent 40%),
+                  var(--bg);
+      color:var(--text);
+    }
+    a{color:inherit; text-decoration:none}
+    .container{width: min(1200px, 92%); margin: 0 auto}
+
+    /* Header */
+    header{
+      position: sticky; top:0; z-index:40;
+      backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(11,12,16,.85), rgba(11,12,16,.6));
+      border-bottom: 1px solid #1b2230;
+    }
+    .topbar{display:flex; align-items:center; gap:12px; padding:14px 0}
+    .logo{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px}
+    .logo-badge{width:28px; height:28px; display:grid; place-items:center; border-radius:10px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); box-shadow: var(--shadow)}
+    .spacer{flex:1}
+
+    .search{position:relative; flex:1; max-width:560px}
+    .search input{
+      width:100%; padding:12px 44px; border-radius:999px; border:1px solid #1b2230; outline:none;
+      background: #0e1117; color:var(--text); box-shadow: inset 0 0 0 1px #0d1420;
+    }
+    .search .icon{position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:.7}
+
+    .actions{display:flex; align-items:center; gap:10px}
+    .btn{
+      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; border:1px solid #1b2230; background:#0f131a; color:var(--text);
+      cursor:pointer; transition:.2s transform, .2s filter; box-shadow: inset 0 -1px 0 #0a0d12;
+    }
+    .btn:hover{transform: translateY(-1px)}
+    .btn.primary{background: linear-gradient(135deg, #1b2840, #121a2b); border-color:#22314a}
+    .btn.brand{background: linear-gradient(135deg, var(--brand), var(--brand-2)); border-color: transparent; color:white}
+    .btn.ghost{background:transparent}
+
+    .badge{min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:#1c2433; color:#cfe0ff; display:inline-grid; place-items:center; font-size:12px; font-weight:700}
+
+    /* Hero */
+    .hero{padding:32px 0 10px}
+    .hero-banner{position:relative; overflow:hidden; border-radius:var(--radius); background: linear-gradient(135deg, #0e1626, #121826); border:1px solid #1b2230}
+    .hero-inner{display:flex; flex-wrap:wrap; align-items:center; gap:24px; padding:28px}
+    .hero h1{font-size: clamp(22px, 2vw + 16px, 34px); margin:0}
+    .hero p{color:var(--sub); margin:.4rem 0 1rem}
+    .hero .cta{display:flex; gap:10px; flex-wrap:wrap}
+
+    /* Categories */
+    .categories{display:flex; gap:10px; flex-wrap:wrap; margin:18px 0}
+    .chip{padding:8px 12px; border-radius:999px; background:#0f141d; border:1px solid #1b2230; color:#cfe0ff; cursor:pointer}
+    .chip.active{background:#162237; border-color:#2a3b59}
+
+    /* Grid */
+    .grid{display:grid; grid-template-columns: repeat(4, 1fr); gap:16px}
+    @media (max-width: 1000px){ .grid{grid-template-columns: repeat(3, 1fr)} }
+    @media (max-width: 720px){ .grid{grid-template-columns: repeat(2, 1fr)} }
+    @media (max-width: 480px){ .grid{grid-template-columns: 1fr} }
+
+    .card{background:var(--card); border:1px solid #1b2230; border-radius:18px; overflow:hidden; box-shadow: var(--shadow); display:flex; flex-direction:column}
+    .thumb{position:relative; aspect-ratio: 4 / 3; background:#0e1116}
+    .thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+    .info{padding:14px}
+    .title{font-size:15px; font-weight:600; line-height:1.3; min-height:40px}
+    .brand{font-size:12px; color:#9fb2c9}
+    .price{display:flex; align-items:center; gap:8px; margin:10px 0; font-weight:700}
+    .price del{color:#7b8ba3; font-weight:500}
+    .add{margin-top:auto; padding:12px; border-top:1px solid #1b2230; display:flex; gap:8px}
+
+    /* Drawer (Carrinho) */
+    .drawer{position: fixed; inset: 0 0 0 auto; width:min(420px, 92%); background:#0e1117; border-left: 1px solid #1b2230; transform: translateX(100%); transition: .25s transform; z-index:60; display:flex; flex-direction:column}
+    .drawer.open{transform: translateX(0)}
+    .drawer header{position:sticky; top:0; background:#0e1117; padding:14px; border-bottom:1px solid #1b2230}
+    .drawer .items{padding:14px; display:flex; flex-direction:column; gap:12px; overflow:auto}
+    .cart-item{display:grid; grid-template-columns:64px 1fr auto; gap:12px; align-items:center; background:#0d1118; border:1px solid #1b2230; border-radius:12px; padding:8px}
+    .cart-item img{width:64px; height:64px; object-fit:cover; border-radius:8px}
+    .qty{display:flex; gap:6px; align-items:center}
+    .qty button{width:28px; height:28px; border-radius:8px; border:1px solid #1b2230; background:#0f141d; color:var(--text); cursor:pointer}
+    .drawer footer{margin-top:auto; padding:14px; border-top:1px solid #1b2230; background:#0e1117}
+
+    /* Modal (Login) */
+    .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; place-items:center; z-index:70}
+    .modal-backdrop.open{display:grid}
+    .modal{width:min(460px, 92%); background:#0f131a; border:1px solid #1b2230; border-radius:18px; box-shadow: var(--shadow)}
+    .modal header{padding:16px; border-bottom:1px solid #1b2230}
+    .modal .content{padding:16px; display:flex; flex-direction:column; gap:10px}
+    .field{display:flex; flex-direction:column; gap:6px}
+    .field input{padding:12px; border-radius:12px; border:1px solid #1b2230; background:#0b0f15; color:var(--text)}
+    .hint{font-size:12px; color:#8ea4bd}
+
+    /* Toast */
+    .toast{position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateY(20px); background:#0f141d; border:1px solid #1b2230; color:var(--text); padding:10px 14px; border-radius:12px; box-shadow:var(--shadow); opacity:0; transition:.25s}
+    .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+    /* Footer */
+    footer{padding:40px 0; color:#8ea4bd}
+     /* ========== MELHORIAS MOBILE ========== */
+@media (max-width: 768px) {
+  /* Container ocupa toda a largura */
+  .container {
+    width: 95%;
+  }
+
+  /* Header adaptado */
+  header .topbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Campo de busca ocupa largura total */
+  .search {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+  .search input {
+    padding: 12px 40px;
+    font-size: 16px;
+  }
+
+  /* Botões do cabeçalho */
+  .actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Hero mais compacto */
+  .hero-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: clamp(20px, 5vw, 28px);
+  }
+  .hero p {
+    font-size: 14px;
+  }
+  .hero .cta {
+    justify-content: center;
+  }
+
+  /* Grade de produtos — 2 por linha */
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* No celular menor, só 1 produto por linha */
+  @media (max-width: 480px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Cartão do produto */
+  .card {
+    border-radius: 14px;
+  }
+  .thumb {
+    aspect-ratio: 1 / 1;
+  }
+  .info .title {
+    font-size: 14px;
+  }
+  .price {
+    font-size: 16px;
+  }
+  .price del {
+    font-size: 13px;
+  }
+
+  /* Botões maiores no celular */
+  .btn {
+    padding: 12px 16px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+
+  /* Modal e carrinho ocupam quase a tela inteira */
+  .drawer {
+    width: 100%;
+    max-width: 100%;
+  }
+  .modal {
+    width: 95%;
+  }
+}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container topbar">
+      <a class="logo" href="#" aria-label="Início">
+        <span class="logo-badge">🛍️</span>
+        <span>LojaX</span>
+      </a>
+
+      <div class="spacer"></div>
+
+      <form class="search" role="search" aria-label="Busca de produtos" onsubmit="event.preventDefault()">
+        <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" stroke="currentColor" stroke-width="1.5"/></svg>
+        <input id="searchInput" type="search" placeholder="Buscar produtos..." autocomplete="off" />
+      </form>
+
+      <div class="actions">
+        <button id="loginBtn" class="btn primary" aria-haspopup="dialog">Entrar</button>
+        <button id="cartBtn" class="btn" aria-haspopup="dialog">
+          <span>🛒 Carrinho</span>
+          <span id="cartBadge" class="badge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-banner">
+        <div class="hero-inner">
+          <div style="flex:1; min-width:260px">
+            <h1>Bem-vindo à da FIRMA</h1>
+            <p>Descubra ofertas em eletrônicos, moda e muito mais. Carrinho, login e busca funcionando — tudo em HTML, CSS e JS puros.</p>
+            <div class="cta">
+              <a href="#produtos" class="btn brand">Explorar ofertas</a>
+              <button class="btn" id="ofertasBtn">Ver promoções</button>
+            </div>
+          </div>
+          <div style="flex:1; min-width:260px">
+            <img src="https://images.unsplash.com/photo-1542293787938-c9e299b88054?q=80&w=1400&auto=format&fit=crop" alt="Vitrine de produtos" style="width:100%; border-radius:14px; border:1px solid #1b2230"/>
+          </div>
+        </div>
+      </div>
+      <div class="categories" id="categories"></div>
+    </section>
+
+    <section id="produtos" class="grid" aria-live="polite"></section>
+  </main>
+
+  <!-- Drawer Carrinho -->
+  <aside id="cartDrawer" class="drawer" role="dialog" aria-modal="true" aria-label="Carrinho">
+    <header class="topbar" style="padding:12px 14px">
+      <strong>Seu carrinho</strong>
+      <div class="spacer"></div>
+      <button id="closeCart" class="btn ghost" aria-label="Fechar">✖</button>
+    </header>
+    <div class="items" id="cartItems"></div>
+    <footer>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+        <span>Subtotal</span>
+        <strong id="cartTotal">$0,00</strong>
+      </div>
+      <button id="checkoutBtn" class="btn brand" style="width:100%">Finalizar compra</button>
+    </footer>
+  </aside>
+
+  <!-- Modal Login -->
+  <div id="loginModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="modal">
+      <header class="topbar" style="padding:12px 16px">
+        <strong id="loginTitle">Entrar na LojaX</strong>
+        <div class="spacer"></div>
+        <button id="closeLogin" class="btn ghost" aria-label="Fechar">✖</button>
+      </header>
+      <div class="content">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="voce@exemplo.com" required />
+        </div>
+        <div class="field">
+          <label for="password">Palavra-passe</label>
+          <input id="password" type="password" placeholder="••••••••" required />
+        </div>
+        <label class="hint" style="display:flex; gap:8px; align-items:center">
+          <input id="remember" type="checkbox" /> Manter sessão iniciada
+        </label>
+        <button id="submitLogin" class="btn brand" style="width:100%">Entrar</button>
+        <p class="hint">Dica: este login é apenas demonstrativo. Criamos a conta na primeira vez que você entrar com um email qualquer.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Pronto!</div>
+
+  <footer>
+    <div class="container">
+      <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap">
+        <span>&copy; <span id="year"></span> LojaX.</span>
+        <span class="hint">Projeto exemplo (não é uma loja real).</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ========= DATA =========
+    const PRODUCTS = [
+      {id:1, title:"Smartphone Nova X 128GB", brand:"TechNova", price:399.9, compareAt:459.9, category:"Eletrônicos", img:"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1400&auto=format&fit=crop"},
+      {id:2, title:"Headset Gamer SonicBoom", brand:"Audiomax", price:79.9, compareAt:129.9, category:"Eletrônicos", img:"https://images.unsplash.com/photo-1518443881135-625cd4688f52?q=80&w=1400&auto=format&fit=crop"},
+      {id:3, title:"Tênis Runner Pro", brand:"Fleet", price:99.9, compareAt:149.9, category:"Moda", img:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1400&auto=format&fit=crop"},
+      {id:4, title:"Mochila Urban 25L", brand:"CarryOn", price:49.9, compareAt:69.9, category:"Acessórios", img:"https://images.unsplash.com/photo-1514477917009-389c76a86b68?q=80&w=1400&auto=format&fit=crop"},
+      {id:5, title:"Camiseta Básica Premium", brand:"Algodão+", price:19.9, compareAt:29.9, category:"Moda", img:"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1400&auto=format&fit=crop"},
+      {id:6, title:"Teclado Mecânico RGB", brand:"KeyLab", price:69.9, compareAt:99.9, category:"Eletrônicos", img:"https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1400&auto=format&fit=crop"},
+      {id:7, title:"Relógio Esportivo FitX", brand:"Move+", price:59.9, compareAt:89.9, category:"Acessórios", img:"https://images.unsplash.com/photo-1516570161787-2fd917215a3d?q=80&w=1400&auto=format&fit=crop"},
+      {id:8, title:"Jaqueta Corta-Vento", brand:"Storm", price:89.9, compareAt:119.9, category:"Moda", img:"https://images.unsplash.com/photo-1516826957135-700dedea698c?q=80&w=1400&auto=format&fit=crop"},
+      {id:9, title:"Câmera Compacta PixelOne", brand:"FotoPro", price:249.9, compareAt:299.9, category:"Eletrônicos", img:"https://images.unsplash.com/photo-1484704849700-f032a568e944?q=80&w=1400&auto=format&fit=crop"},
+      {id:10, title:"Garrafa Térmica 1L", brand:"Thermi", price:24.9, compareAt:34.9, category:"Casa", img:"https://images.unsplash.com/photo-1540569014015-19a7be504e3a?q=80&w=1400&auto=format&fit=crop"},
+      {id:11, title:"Cafeteira Drip Pro", brand:"BrewIt", price:129.9, compareAt:169.9, category:"Casa", img:"https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=1400&auto=format&fit=crop"},
+      {id:12, title:"Mouse Sem Fio Swift", brand:"KeyLab", price:29.9, compareAt:39.9, category:"Eletrônicos", img:"https://images.unsplash.com/photo-1587825140400-9ff12a3f8d01?q=80&w=1400&auto=format&fit=crop"}
+    ];
+
+    const CATEGORIES = ["Tudo", ...Array.from(new Set(PRODUCTS.map(p=>p.category)))];
+
+    // ========= STATE =========
+    const state = {
+      cart: JSON.parse(localStorage.getItem('cart')||'[]'),
+      user: JSON.parse(localStorage.getItem('user')||'null'),
+      category: 'Tudo',
+      query: ''
+    }
+
+    // ========= HELPERS =========
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => document.querySelectorAll(sel);
+    const format = n => n.toLocaleString('pt-BR', {style:'currency', currency:'USD'});
+    const toast = (msg) => { const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1800) };
+
+    function save(){
+      localStorage.setItem('cart', JSON.stringify(state.cart));
+      if(state.user) localStorage.setItem('user', JSON.stringify(state.user));
+    }
+
+    // ========= RENDER =========
+    function renderCategories(){
+      const wrap = $('#categories');
+      wrap.innerHTML = '';
+      CATEGORIES.forEach(cat=>{
+        const b = document.createElement('button');
+        b.className = 'chip' + (state.category===cat ? ' active' : '');
+        b.textContent = cat;
+        b.onclick = () => { state.category = cat; renderProducts(); highlightCat(); };
+        wrap.appendChild(b);
+      })
+    }
+    function highlightCat(){
+      $$('#categories .chip').forEach(el=>{
+        el.classList.toggle('active', el.textContent===state.category)
+      })
+    }
+
+    function filteredProducts(){
+      return PRODUCTS.filter(p=>{
+        const matchCat = state.category==='Tudo' || p.category===state.category;
+        const q = state.query.trim().toLowerCase();
+        const matchQ = !q || [p.title, p.brand, p.category].join(' ').toLowerCase().includes(q);
+        return matchCat && matchQ;
+      })
+    }
+
+    function renderProducts(){
+      const wrap = $('#produtos');
+      const items = filteredProducts();
+      wrap.innerHTML = items.map(p=>`
+        <article class="card" aria-label="${p.title}">
+          <div class="thumb">
+            <img src="${p.img}" alt="${p.title}">
+          </div>
+          <div class="info">
+            <div class="brand">${p.brand} • ${p.category}</div>
+            <h3 class="title">${p.title}</h3>
+            <div class="price"><strong>${format(p.price)}</strong> <del>${format(p.compareAt)}</del></div>
+          </div>
+          <div class="add">
+            <button class="btn" onclick="addToCart(${p.id})">Adicionar</button>
+            <button class="btn primary" onclick="buyNow(${p.id})">Comprar agora</button>
+          </div>
+        </article>
+      `).join('');
+
+      if(!items.length){
+        wrap.innerHTML = `<div class="card" style="grid-column:1/-1; padding:18px">Nenhum produto encontrado.</div>`
+      }
+    }
+
+    function renderCart(){
+      $('#cartBadge').textContent = state.cart.reduce((a,i)=>a+i.qty,0);
+      const itemsWrap = $('#cartItems');
+      if(!state.cart.length){
+        itemsWrap.innerHTML = `<div class="card" style="padding:14px">Seu carrinho está vazio.</div>`;
+      } else {
+        itemsWrap.innerHTML = state.cart.map(i=>`
+          <div class="cart-item">
+            <img src="${i.img}" alt="${i.title}">
+            <div>
+              <div style="font-weight:600">${i.title}</div>
+              <div class="hint">${i.brand}</div>
+              <div style="margin-top:6px"><strong>${format(i.price)}</strong></div>
+            </div>
+            <div class="qty">
+              <button onclick="decQty(${i.id})">−</button>
+              <span>${i.qty}</span>
+              <button onclick="incQty(${i.id})">+</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      const total = state.cart.reduce((a,i)=>a+i.price*i.qty,0);
+      $('#cartTotal').textContent = format(total);
+    }
+
+    function updateHeaderUser(){
+      const loginBtn = $('#loginBtn');
+      if(state.user){
+        loginBtn.textContent = `Olá, ${state.user.email.split('@')[0]}`;
+        loginBtn.classList.remove('primary');
+        loginBtn.classList.add('ghost');
+        loginBtn.onclick = () => {
+          // menu rápido: sair
+          if(confirm('Terminar sessão?')){ state.user=null; localStorage.removeItem('user'); updateHeaderUser(); toast('Sessão terminada') }
+        }
+      } else {
+        loginBtn.textContent = 'Entrar';
+        loginBtn.classList.add('primary');
+        loginBtn.classList.remove('ghost');
+        loginBtn.onclick = openLogin;
+      }
+    }
+
+    // ========= CART =========
+    window.addToCart = (id) => {
+      const p = PRODUCTS.find(x=>x.id===id);
+      const existing = state.cart.find(i=>i.id===id);
+      if(existing){ existing.qty++; } else { state.cart.push({...p, qty:1}); }
+      save(); renderCart(); toast('Adicionado ao carrinho');
+    }
+    window.buyNow = (id) => { addToCart(id); openCart(); }
+    window.incQty = (id) => { const i = state.cart.find(x=>x.id===id); if(i){ i.qty++; save(); renderCart(); } }
+    window.decQty = (id) => {
+      const idx = state.cart.findIndex(x=>x.id===id);
+      if(idx>-1){ state.cart[idx].qty--; if(state.cart[idx].qty<=0) state.cart.splice(idx,1); save(); renderCart(); }
+    }
+
+    // ========= LOGIN =========
+    function openLogin(){ $('#loginModal').classList.add('open'); $('#email').focus(); }
+    function closeLogin(){ $('#loginModal').classList.remove('open'); }
+
+    function signIn(){
+      const email = $('#email').value.trim();
+      const pass = $('#password').value.trim();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Email inválido');
+      if(pass.length < 4) return toast('Use ao menos 4 caracteres');
+      const remember = $('#remember').checked;
+      state.user = { email, remember };
+      if(remember) localStorage.setItem('user', JSON.stringify(state.user));
+      toast('Sessão iniciada');
+      updateHeaderUser();
+      closeLogin();
+    }
+
+    // ========= DRAWER =========
+    function openCart(){ $('#cartDrawer').classList.add('open'); }
+    function closeCart(){ $('#cartDrawer').classList.remove('open'); }
+
+    // ========= EVENTS =========
+    $('#loginBtn').onclick = openLogin;
+    $('#cartBtn').onclick = openCart;
+    $('#closeCart').onclick = closeCart;
+    $('#closeLogin').onclick = closeLogin;
+    $('#submitLogin').onclick = signIn;
+    $('#searchInput').addEventListener('input', (e)=>{ state.query = e.target.value; renderProducts(); });
+    $('#ofertasBtn').onclick = () => { state.query = ''; state.category = 'Tudo'; renderProducts(); highlightCat(); toast('Ofertas em destaque') };
+
+    // Acessibilidade: fechar ao apertar ESC
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='Escape'){ closeLogin(); closeCart(); }
+    })
+
+    // ========= INIT =========
+    function init(){
+      renderCategories();
+      renderProducts();
+      renderCart();
+      updateHeaderUser();
+      $('#year').textContent = new Date().getFullYear();
+    }
+    init();
+  </script>
+</body>
+</html>
